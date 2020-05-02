@@ -3,7 +3,8 @@
   "workspaces": {
     "packages": [
       "api",
-      "web"
+      "web",
+      "sockets"
     ]
   },
   "devDependencies": {
@@ -16,5 +17,9 @@
   "engines": {
     "node": ">=12",
     "yarn": ">=1.15"
+  },
+  "scripts": {
+    "dev": "yarn rw dev",
+    "sockets": "yarn workspace sockets node ."
   }
 }
