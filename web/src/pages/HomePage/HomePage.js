@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import socketIOClient from 'socket.io-client'
+import _ from 'lodash'
 
 import MainLayout from 'src/layouts/MainLayout/MainLayout'
 const ENDPOINT = 'http://127.0.0.1:4001'
@@ -10,41 +11,49 @@ const HomePage = () => {
   const [userId, setUserId] = useState(null)
   const [allUsers, setAllUsers] = useState([])
   const [activeUser, setActiveUser] = useState(null)
-  const [drawing, setDrawing] = useState(false)
-  const [lastPos, setLastPos] = useState({ x: 0, y: 0 })
+  const [room, setRoom] = useState()
+  const [lines, setLines] = useState([])
+  const [isDrawing, setIsDrawing] = useState(false)
+  const drawingArea = useRef()
 
-  const canvasEl = useRef()
+  function createRelativePoint(e) {
+    const boundingRect = drawingArea.current.getBoundingClientRect()
+    const point = {
+      x: e.clientX - boundingRect.x,
+      y: e.clientY - boundingRect.y,
+    }
+    return point
+  }
+  const isUsersTurn = useRef()
+  useEffect(() => {
+    isUsersTurn.current = userId === activeUser
+  }, [userId, activeUser])
+
+  function endTurn(e) {
+    if (!socket) return
+    console.log('ran')
+    console.log(room)
+    socket.emit('end_turn', JSON.stringify({ room }))
+  }
 
   useEffect(() => {
     if (!socket) {
       setSocket(socketIOClient(ENDPOINT))
       console.log('connected')
     }
-  }, [])
-
-  function draw(ctx, location) {
-    if (!drawing) return
-
-    ctx.strokeStyle = '#BADA55'
-    ctx.lineJoin = 'round'
-    ctx.lineCap = 'round'
-    ctx.lineWidth = 50
-
-    const { x, y } = location
-    ctx.beginPath()
-    ctx.moveTo(lastPos.x, lastPos.y)
-    ctx.lineTo(x, y)
-    ctx.stroke()
-  }
+  }, [socket])
 
   useEffect(() => {
     if (socket) {
       socket.on('start', (data) => {
-        const { userId } = JSON.parse(data)
+        const { userId, room } = JSON.parse(data)
         setUserId(userId)
+        setRoom(room)
+        console.log(room)
       })
 
       socket.on('new_users', (data) => {
+        console.log('gotit')
         const { userIds } = JSON.parse(data)
         console.log(userIds)
         setAllUsers(userIds)
@@ -56,37 +65,33 @@ const HomePage = () => {
         console.log(activeUserId)
       })
 
-      socket.on('active_user_mousemove', (data) => {
-        if (activeUser === userId) return
-        const { ctx, position } = JSON.parse(data)
-        if (drawing) {
-          draw(ctx, position)
+      socket.on('new_lines_added', (data) => {
+        console.log(isUsersTurn.current)
+        if (isUsersTurn.current === false) {
+          const { lines } = JSON.parse(data)
+          setLines(lines)
         }
-        setLastPos(position)
-      })
-
-      socket.on('drawing', (data) => {
-        if (activeUser === userId) return
-        const { userId } = JSON.parse(data)
-        if (userId === activeUser) {
-          setDrawing(drawing)
-        }
-      })
-
-      socket.on('drawingStopped', () => {
-        if (activeUser === userId) return
-        setDrawing(false)
-        setLastPos({ x: 0, y: 0 })
       })
     }
     return () => {
       if (socket) {
-        socket.emit('disconnecting', JSON.stringify({ userId }))
-
+        socket.emit('disconnecting', JSON.stringify({ userId, room }))
         console.log('disconnected')
       }
     }
-  }, [socket])
+  }, [socket, isUsersTurn])
+
+  const submitlines = (socket, userId, lines, room) => {
+    if (socket) {
+      socket.emit('new_lines_added', JSON.stringify({ lines, userId, room }))
+    }
+  }
+  const fn = useRef(_.throttle(submitlines, 100)).current
+  useEffect(() => {
+    if (socket && isUsersTurn.current === true) {
+      fn(socket, userId, lines, room)
+    }
+  }, [lines, fn, socket, userId, isUsersTurn, room])
 
   return (
     <MainLayout>
@@ -94,12 +99,13 @@ const HomePage = () => {
       <button
         onClick={() => {
           if (!activeUser && socket) {
-            socket.emit('start_game', JSON.stringify({ userId }))
+            socket.emit('start_game', JSON.stringify({ userId, room }))
           }
         }}
       >
         Start Game
       </button>
+      {userId === activeUser && <button onClick={endTurn}>End Turn</button>}
       <ul style={{ display: `flex` }}>
         {allUsers.map((user) => (
           <li
@@ -112,56 +118,54 @@ const HomePage = () => {
           </li>
         ))}
       </ul>
-      <canvas
-        width={window.innerWidth}
-        height={window.innerHeight}
-        ref={canvasEl}
-        onMouseMove={(e) => {
-          if (activeUser !== userId) return
-          e.persist()
-          const canvas = canvasEl.current
-          let ctx = canvas.getContext('2d')
-          const { left, top } = canvas.getBoundingClientRect()
-          const { clientX, clientY } = e
-          const position = {
-            x: clientX - left,
-            y: clientY - top,
-          }
-          draw(ctx, position)
-          setLastPos(position)
-
-          if (socket) {
-            socket.emit(
-              'active_user_mousemove',
-              JSON.stringify({ ctx, position })
-            )
-          }
+      <svg
+        ref={drawingArea}
+        onMouseDown={(e) => {
+          setIsDrawing(true)
+          const point = createRelativePoint(e)
+          setLines([...lines, [point]])
         }}
-        onMouseDown={() => {
-          if (activeUser !== userId) return
-          setDrawing(true)
-          if (socket) {
-            socket.emit('drawing', JSON.stringify({ userId }))
-          }
+        onMouseMove={(e) => {
+          if (!isDrawing) return
+          e.persist()
+          console.log('drawing')
+          setLines((prevState) => {
+            const lastLine = prevState[prevState.length - 1]
+            const finishedLines = prevState.filter(
+              (_, index) => index !== prevState.length - 1
+            )
+            const point = createRelativePoint(e)
+            lastLine.push(point)
+            const newState = [...finishedLines, lastLine]
+            return newState
+          })
         }}
         onMouseUp={() => {
-          if (activeUser !== userId) return
-          setDrawing(false)
-          if (socket) {
-            socket.emit('drawingStopped', JSON.stringify({ userId }))
-          }
+          setIsDrawing(false)
         }}
-        onMouseOut={() => {
-          if (activeUser !== userId) return
-          setDrawing(false)
-          if (socket) {
-            socket.emit('drawingStopped', JSON.stringify({ userId }))
-          }
+        onMouseLeave={() => {
+          setIsDrawing(false)
         }}
-        id="draw"
-      ></canvas>
+        style={{ width: `100%`, height: `600px`, border: `1px solid black` }}
+      >
+        {lines.map((line, id) => (
+          <DrawingLine key={id} line={line} />
+        ))}
+      </svg>
     </MainLayout>
   )
 }
 
 export default HomePage
+
+const DrawingLine = ({ line }) => {
+  const pathData = `M ${line.map((p) => `${p.x} ${p.y}`).join(' L ')}`
+  return (
+    <path
+      d={pathData}
+      stroke={`black`}
+      fill={`none`}
+      strokeWidth={`20px`}
+    ></path>
+  )
+}

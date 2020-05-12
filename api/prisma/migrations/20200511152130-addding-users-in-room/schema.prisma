@@ -1,6 +1,6 @@
 datasource DS {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url = "***"
 }
 
 generator client {
@@ -16,8 +16,8 @@ model User {
   name     String?
   password String
   rooms    Room[]
-  inRoom   Room?   @relation("inRoom", fields: [inRoomId], references: [id])
-  inRoomId Int?
+  inRoom   Room    @relation("inRoom", fields: [inRoomId], references: [id])
+  inRoomId Int
 }
 
 model Room {

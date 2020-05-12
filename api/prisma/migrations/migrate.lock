@@ -1,0 +1,21 @@
+# IF THERE'S A GIT CONFLICT IN THIS FILE, DON'T SOLVE IT MANUALLY!
+# INSTEAD EXECUTE `prisma migrate fix`
+# Prisma Migrate lockfile v1
+# Read more about conflict resolution here: TODO
+
+20200508152809-created-user
+20200508155133-added-friends
+20200508202626-removaloffriends
+20200508203204-roomadded
+20200508205134-fixed-typo-in-room
+20200511084533-starting-over-with-rooms
+20200511085749-trying-rooms-again
+20200511091632-non-relational-room
+20200511093011-added-rooms-back-to-user
+20200511102952-rename-room-field
+20200511104610-idontknow
+20200511144552-added-acive-field-to-room
+20200511144702-default-active
+20200511145251-no
+20200511152130-addding-users-in-room
+20200511152350-d
