@@ -3,8 +3,6 @@ export const schema = gql`
     id: Int!
     email: String!
     name: String
-    password: String!
-    inRoom: Room
   }
 
   type Query {
@@ -15,19 +13,16 @@ export const schema = gql`
   input CreateUserInput {
     email: String!
     name: String
-    password: String!
   }
 
   input UpdateUserInput {
     email: String
     name: String
-    password: String
   }
 
   type Mutation {
     createUser(input: CreateUserInput!): User!
     updateUser(id: Int!, input: UpdateUserInput!): User!
     deleteUser(id: Int!): User!
-    joinRoom(id: Int!, roomId: Int!): User!
   }
 `

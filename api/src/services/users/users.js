@@ -12,6 +12,7 @@ export const user = ({ id }) => {
 }
 
 export const createUser = ({ input }) => {
+  console.log(input)
   return db.user.create({
     data: input,
   })
@@ -27,19 +28,5 @@ export const updateUser = ({ id, input }) => {
 export const deleteUser = ({ id }) => {
   return db.user.delete({
     where: { id },
-  })
-}
-
-export const joinRoom = ({ id, roomId }) => {
-  return db.user.update({
-    data: {
-      inRoom: {
-        connect: {
-          id: roomId,
-        },
-      },
-    },
-    where: { id },
-    include: { inRoom: true },
   })
 }

@@ -2,10 +2,9 @@ export const schema = gql`
   type Room {
     id: Int!
     name: String!
-    user: User
+    ownerId: String
     active: Boolean
-    inGame: Boolean
-    usersInRoom: [User]
+    userCount: Int
   }
   type Query {
     rooms: [Room!]!
@@ -13,8 +12,8 @@ export const schema = gql`
   }
 
   input CreateRoomInput {
-    ownerId: Int!
-    name: String!
+    ownerId: String!
+    name: String
   }
   input UpdateRoomInput {
     name: String
@@ -25,5 +24,8 @@ export const schema = gql`
     createRoom(input: CreateRoomInput!): Room!
     deleteRoom(id: Int!): Room!
     updateRoom(id: Int!, input: UpdateRoomInput!): Room!
+    generateRoomName(input: String): String!
+    addUserInRoom(id: Int!): Room!
+    removeUserFromRoom(id: Int!): Room!
   }
 `

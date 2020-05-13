@@ -1,6 +1,6 @@
 datasource DS {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url = "***"
 }
 
 generator client {
@@ -16,9 +16,8 @@ model User {
 }
 
 model Room {
-  id        Int      @default(autoincrement()) @id
-  name      String   @unique
-  active    Boolean? @default(false)
-  ownerId   String?
-  userCount Int      @default(0)
+  id      Int      @default(autoincrement()) @id
+  name    String   @unique
+  active  Boolean? @default(false)
+  ownerId String?
 }
