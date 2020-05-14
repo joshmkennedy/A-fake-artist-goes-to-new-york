@@ -10,8 +10,8 @@
     "@reach/tabs": "^0.10.2",
     "@reach/visually-hidden": "^0.10.2",
     "@redwoodjs/auth": "^0.6.1-canary.26",
-    "@redwoodjs/router": "^0.6.0",
-    "@redwoodjs/web": "^0.6.0",
+    "@redwoodjs/router": "0.6.1-canary.29",
+    "@redwoodjs/web": "0.6.1-canary.29",
     "lodash": "^4.17.15",
     "lodash.debounce": "^4.0.8",
     "netlify-identity-widget": "^1.6.0",
@@ -20,6 +20,7 @@
     "react-dom": "^16.13.1",
     "react-netlify-identity": "^0.2.5",
     "react-netlify-identity-widget": "^0.2.7",
-    "socket.io-client": "^2.3.0"
+    "socket.io-client": "^2.3.0",
+    "styled-components": "^5.1.0"
   }
 }

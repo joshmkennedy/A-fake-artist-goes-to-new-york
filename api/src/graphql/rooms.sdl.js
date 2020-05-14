@@ -12,7 +12,6 @@ export const schema = gql`
   }
 
   input CreateRoomInput {
-    ownerId: String!
     name: String
   }
   input UpdateRoomInput {

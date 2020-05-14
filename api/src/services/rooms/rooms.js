@@ -1,18 +1,17 @@
 import { db } from 'src/lib/db'
 import { randomString } from 'src/lib/generateString'
 export const rooms = () => {
-  return db.room.findMany({
-    include: { user: true },
-  })
+  return db.room.findMany()
 }
 
-export const roomById = ({ id }) => {
+export const roomById = async (_args, { context }) => {
+  console.log({ user: context?.currentUser })
   return db.room.findOne({
-    where: { id },
+    where: { id: _args.id },
   })
 }
 
-export const createRoom = async ({ input }) => {
+export const createRoom = async ({ input }, { context }) => {
   let name
 
   if (!input.name) {
@@ -30,7 +29,7 @@ export const createRoom = async ({ input }) => {
   return db.room.create({
     data: {
       name,
-      ownerId: input.ownerId,
+      ownerId: context?.currentUser?.email,
     },
   })
 }
@@ -49,16 +48,16 @@ export const deleteRoom = ({ id }) => {
 }
 
 export const generateRoomName = () => {
-  async function findUniqueName() {
+  async function generateUniqueName() {
     const name = randomString()
     const existingRoom = await db.room.findOne({ where: { name } })
     if (existingRoom) {
-      findUniqueName()
+      generateUniqueName()
     } else {
       return name
     }
   }
-  return findUniqueName()
+  return generateUniqueName()
 }
 
 export const addUserInRoom = async ({ id }) => {

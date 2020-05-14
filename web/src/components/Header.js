@@ -1,4 +1,6 @@
 import { useAuth } from '@redwoodjs/auth'
+import { Link, routes } from '@redwoodjs/router'
+import CreateGameForm from 'src/components/CreateGameForm'
 
 import Logo from './Logo/Logo'
 function Header() {
@@ -21,6 +23,7 @@ function Header() {
         {loading ? null : (
           <button onClick={authFn}>{authenticated ? `Logout` : `Login`}</button>
         )}
+        {authenticated && <CreateGameForm />}
       </div>
     </>
   )

@@ -20,7 +20,7 @@ const Routes = () => {
       />
       <Route path="/admin/users/{id:Int}" page={UserPage} name="user" />
       <Route path="/admin/users" page={UsersPage} name="users" />
-      <Route path="/new-paper" page={PaperPage} name="paper" />
+      <Route path="/paper/{roomId}" page={PaperPage} name="paper" />
       <Route path="/" page={HomePage} name="home" />
       <Route notfound page={NotFoundPage} />
     </Router>
