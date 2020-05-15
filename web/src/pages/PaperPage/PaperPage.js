@@ -1,89 +1,102 @@
 import React, { useEffect, useState, useRef } from 'react'
-import socketIOClient from 'socket.io-client'
 import _ from 'lodash'
 
 import MainLayout from 'src/layouts/MainLayout/MainLayout'
-const ENDPOINT = 'http://127.0.0.1:4001'
-//const USER = 'redwood'
-const PaperPage = ({ roomId }) => {
-  const { socket } = useConnectSocket(ENDPOINT)
 
-  const [userId, setUserId] = useState(null)
+import { useIsRoomOwner, useConnectSocket, useRoomState } from './hooks'
+const ENDPOINT = 'http://127.0.0.1:4001'
+
+const PaperPage = ({ roomId }) => {
+  //USERS
+  const [userInformation, setUserInformation] = useState({
+    userId: '',
+    userName: 'Josh Kennedy',
+  })
+  const { isOwner } = useIsRoomOwner(roomId)
   const [allUsers, setAllUsers] = useState([])
   const [activeUser, setActiveUser] = useState(null)
-  const [room, setRoom] = useState()
-  const [lines, setLines] = useState([])
-  const [isDrawing, setIsDrawing] = useState(false)
-
-  function endTurn(e) {
-    if (!socket) return
-    console.log('ran')
-    console.log(room)
-    socket.emit('end_turn', JSON.stringify({ room }))
-  }
-  function startGame() {
-    if (!activeUser && socket) {
-      socket.emit('start_game', JSON.stringify({ userId, room }))
-    }
-  }
-
   useEffect(() => {
     if (socket) {
+      console.log('connected')
       socket.on('start', (data) => {
-        const { userId, room } = JSON.parse(data)
-        setUserId(userId)
-        setRoom(room)
-        console.log(room)
+        const { newUser, state } = JSON.parse(data)
+        setRoomState(state)
+        setUserInformation(newUser)
+        setInRoom(true)
       })
 
       socket.on('new_users', (data) => {
-        console.log('gotit')
-        const { userIds } = JSON.parse(data)
-        console.log(userIds)
-        setAllUsers(userIds)
+        const { userList } = JSON.parse(data)
+        setAllUsers([...userList])
       })
 
       socket.on('set_active_user', (data) => {
         const { activeUserId } = JSON.parse(data)
         setActiveUser(activeUserId)
-        console.log(activeUserId)
       })
     }
     return () => {
-      //need to know the userID and room thats why its in the user section
+      //need to know the userInformation and room thats why its in the user section
       if (socket) {
-        socket.emit('disconnecting', JSON.stringify({ userId, room }))
+        socket.emit('disconnecting')
         console.log('disconnected')
+        setInRoom(false)
       }
     }
   }, [socket])
 
+  //Room/Game State
+  const { socket, enterRoom } = useConnectSocket(ENDPOINT, {
+    room: roomId,
+    userInformation,
+  })
+  const [inRoom, setInRoom] = useState(false)
+  const { roomState, setRoomState } = useRoomState(socket)
+
+  function endTurn(e) {
+    if (!socket) return
+    socket.emit('end_turn', JSON.stringify({ room: roomId }))
+  }
+  function startGame() {
+    if (socket) {
+      socket.emit(
+        'start_game',
+        JSON.stringify({
+          userId: userInformation.userId,
+          room: roomId,
+        })
+      )
+    }
+  }
+
   return (
     <MainLayout>
       <h1>{roomId}</h1>
-      <button onClick={startGame}>Start Game</button>
-      {userId === activeUser && <button onClick={endTurn}>End Turn</button>}
+
+      {inRoom && isOwner && <button onClick={startGame}>Start Game</button>}
+      {!inRoom && <button onClick={enterRoom}>enter Game</button>}
+
+      {userInformation.userId === activeUser && (
+        <button onClick={endTurn}>End Turn</button>
+      )}
       <ul style={{ display: `flex` }}>
         {allUsers.map((user) => (
           <li
             style={{
-              backgroundColor: user === activeUser ? `blue` : `white`,
+              backgroundColor: user.id === activeUser ? `blue` : `white`,
             }}
-            key={user}
+            key={user.id}
           >
-            {user}
+            {user.name}
           </li>
         ))}
       </ul>
+      <h3>{roomState}</h3>
       <Paper
         {...{
-          room,
+          room: roomId,
           socket,
-          setIsDrawing,
-          isDrawing,
-          setLines,
-          lines,
-          userId,
+          userInformation,
           activeUser,
         }}
       />
@@ -106,38 +119,36 @@ const DrawingLine = ({ line }) => {
 }
 const Paper = ({
   socket,
-  setIsDrawing,
-  isDrawing,
-  setLines,
-  lines,
+
   activeUser,
-  userId,
+  userInformation,
   room,
 }) => {
+  const [isDrawing, setIsDrawing] = useState(false)
   const drawingArea = useRef()
-
-  const submitlines = (socket, userId, lines, room) => {
+  const [lines, setLines] = useState([])
+  const submitlines = (socket, userInformation, lines, room) => {
     if (socket) {
-      socket.emit('new_lines_added', JSON.stringify({ lines, userId, room }))
+      socket.emit(
+        'new_lines_added',
+        JSON.stringify({ lines, userId: userInformation.userId, room })
+      )
     }
   }
   const fn = useRef(_.throttle(submitlines, 100)).current
   useEffect(() => {
-    if (socket && activeUser === userId) {
-      fn(socket, userId, lines, room)
+    if (socket && activeUser === userInformation.userId) {
+      fn(socket, userInformation, lines, room)
     }
-  }, [lines, fn, socket, userId, activeUser, room])
+  }, [lines, fn, socket, userInformation, activeUser, room])
 
   useEffect(() => {
     if (!socket) return
     socket.on('new_lines_added', (data) => {
-      console.log(activeUser === userId)
-      if (activeUser === userId) {
-        const { lines } = JSON.parse(data)
-        setLines(lines)
-      }
+      const { lines } = JSON.parse(data)
+      setLines(lines)
     })
-  }, [socket, activeUser, userId])
+  }, [socket])
 
   function createRelativePoint(e) {
     const boundingRect = drawingArea.current.getBoundingClientRect()
@@ -187,19 +198,4 @@ const Paper = ({
       ))}
     </svg>
   )
-}
-
-function useConnectSocket(url) {
-  const [socket, setSocket] = useState(false)
-  useEffect(() => {
-    if (!socket) {
-      setSocket(socketIOClient(url))
-      console.log('connected')
-    }
-    return () => {
-      if (socket) {
-      }
-    }
-  }, [socket])
-  return { socket }
 }

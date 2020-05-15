@@ -12,6 +12,7 @@
     "@redwoodjs/auth": "^0.6.1-canary.26",
     "@redwoodjs/router": "0.6.1-canary.29",
     "@redwoodjs/web": "0.6.1-canary.29",
+    "dotenv": "^8.2.0",
     "lodash": "^4.17.15",
     "lodash.debounce": "^4.0.8",
     "netlify-identity-widget": "^1.6.0",

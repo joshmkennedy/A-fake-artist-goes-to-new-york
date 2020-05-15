@@ -1,5 +1,6 @@
 import { db } from 'src/lib/db'
 import { randomString } from 'src/lib/generateString'
+require('dotenv').config()
 export const rooms = () => {
   return db.room.findMany()
 }
@@ -10,21 +11,13 @@ export const roomById = async (_args, { context }) => {
     where: { id: _args.id },
   })
 }
-
-export const createRoom = async ({ input }, { context }) => {
-  let name
-
-  if (!input.name) {
-    name = await generateRoomName()
-  } else {
-    name = input.name
-    const roomExists = await db.room.findOne({
-      where: { name },
-    })
-    if (roomExists) {
-      throw new Error('that name is taken')
-    }
-  }
+export const roomByName = async ({ name }) => {
+  return db.room.findOne({
+    where: { name },
+  })
+}
+export const createRoom = async (_args, { context }) => {
+  const name = await generateRoomName()
 
   return db.room.create({
     data: {
@@ -50,10 +43,14 @@ export const deleteRoom = ({ id }) => {
 export const generateRoomName = () => {
   async function generateUniqueName() {
     const name = randomString()
-    const existingRoom = await db.room.findOne({ where: { name } })
-    if (existingRoom) {
-      generateUniqueName()
-    } else {
+    try {
+      const existingRoom = await db.room.findOne({ where: { name } })
+      if (existingRoom) {
+        generateUniqueName()
+      } else {
+        return name
+      }
+    } catch (e) {
       return name
     }
   }
@@ -90,4 +87,14 @@ export const removeUserFromRoom = async ({ id }) => {
     },
     where: { id },
   })
+}
+
+export const clearAllRooms = ({ secret }) => {
+  console.log(process.env)
+  if (secret === process.env.SECRET) {
+    db.raw(`DELETE FROM Room`)
+    return 'yay'
+  } else {
+    return 'not allowed'
+  }
 }
