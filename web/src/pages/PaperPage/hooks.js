@@ -19,7 +19,7 @@ export function useIsRoomOwner(room) {
   const isOwner =
     !loading &&
     !authLoading &&
-    currentUser?.email === roomData.roomByName.ownerId
+    currentUser?.email === roomData?.roomByName.ownerId
   return { isOwner }
 }
 
@@ -29,8 +29,9 @@ export function useConnectSocket(url, info) {
     if (!socket) {
       setSocket(socketIOClient(url))
     }
-  }, [])
+  }, [socket, url])
   function enterRoom() {
+    console.log(info)
     socket.emit('enter_room', JSON.stringify(info))
   }
   return { socket, enterRoom }
