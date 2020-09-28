@@ -224,7 +224,7 @@ exports.onConnect = function (io, socket) {
     room.users.forEach((user) => {
       const message =
         user.role === DEFAULT ? { pickedWord } : { pickedWord: 'unknown' }
-      user.socket.emit('category', JSON.stringify(message))
+      user.socket.emit('picked_word', JSON.stringify(message))
     })
     sendEvent('word_generated', { io, socket, data })
   }
@@ -236,7 +236,6 @@ exports.onConnect = function (io, socket) {
     notifyRoomActiveUser(io, roomName, newActiveUser)
   }
 
-  //TODO:
   function askForCategory({ data }) {
     const { room } = parseData(data)
     const questionMaster = getQuestionMaster(room)
@@ -244,7 +243,7 @@ exports.onConnect = function (io, socket) {
     questionMaster.socket.emit(
       'ask_for_category',
       JSON.stringify({
-        categories: ['food', 'weather', 'animals'],
+        categories: Object.keys(words),
       })
     )
   }

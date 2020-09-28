@@ -62,6 +62,10 @@ const PaperPage = ({ roomId }) => {
       socket.on('category_picked', (data) => {
         console.log('Need to Write a function for category picked')
       })
+      socket.on('picked_word', (data) => {
+        console.log(JSON.parse(data))
+        console.log('Need to Write a function for category picked')
+      })
       socket.on('turn_ended', (data) => {
         console.log('Need to Write a function for turn_ended')
       })
