@@ -25,18 +25,13 @@
 
 
 ##  Server TODOS:
-- endTurn function - needs work
 - organize code
   - pull out helpers to create library
-  - normalize some things
-  - separate code in to separate files?
 - exposeFaker function
-- room object structure
-- support for multiple rooms
 - make queries to my api from websockets: [graphql-request](https://www.npmjs.com/package/graphql-request)
 - Some sort of validation
 - Lots of other stuff
-- Some bug where sometimes selectRole errors out
+- Some bug where sometimes selectRole errors out !!!!
 
 ##  Frontend TODOS:
 - Styling

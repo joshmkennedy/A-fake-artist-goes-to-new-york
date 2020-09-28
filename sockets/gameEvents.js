@@ -1,3 +1,4 @@
+const { words } = require('./words.js')
 const { Rooms } = require('./lib/rooms.js')
 const rooms = new Rooms()
 
@@ -28,11 +29,12 @@ exports.onConnect = function (io, socket) {
     },
     GENERATE_ROLES: {
       on: {},
-      immediate: selectQuestionMaster,
+      immediate: generateRoles,
     },
     PICKING_WORD: {
       on: {
-        category_word_picked: beginDrawing,
+        category_word_picked: generateWordFromCategory,
+        word_generated: beginDrawing,
       },
       immediate: askForCategory,
     },
@@ -138,7 +140,6 @@ exports.onConnect = function (io, socket) {
     if (!_room) {
       console.log(`couldnt find ${roomName}`, rooms._rooms)
       room = rooms.createRoom({ name: roomName, state: WAITING })
-      console.log(rooms._rooms)
     } else {
       room = _room
     }
@@ -174,7 +175,7 @@ exports.onConnect = function (io, socket) {
     updateRoomState({ io, socket, state: GENERATE_ROLES, data })
   }
 
-  function selectQuestionMaster({ io, socket, data }) {
+  function generateRoles({ io, socket, data }) {
     const { room: roomName } = parseData(data)
     const [room] = rooms.findRoom(roomName)
     //get the users in the room
@@ -205,20 +206,32 @@ exports.onConnect = function (io, socket) {
     updateRoomState({ io, socket, state: PICKING_WORD, data })
   }
 
-  //TODO
-  function beginDrawing({ io, socket, data }) {
-    const { category, room: roomName } = parseData(data)
+  function generateWordFromCategory({ io, socket, data }) {
+    const { category, room: roomName } = data
 
+    const pickedWord =
+      words[category][Math.floor(Math.random() * words[category].length)]
     const [room] = rooms.findRoom(roomName)
+
     room.category = category
+    room.pickedWord = pickedWord
     io.to(roomName).emit(
       'category_picked',
       JSON.stringify({
         category,
       })
     )
-    updateRoomState({ io, socket, state: DRAWING_1, data })
+    room.users.forEach((user) => {
+      const message =
+        user.role === DEFAULT ? { pickedWord } : { pickedWord: 'unknown' }
+      user.socket.emit('category', JSON.stringify(message))
+    })
+    sendEvent('word_generated', { io, socket, data })
+  }
 
+  function beginDrawing({ io, socket, data }) {
+    const { room: roomName } = parseData(data)
+    updateRoomState({ io, socket, state: DRAWING_1, data })
     const newActiveUser = chooseUserToDraw(roomName, 1)
     notifyRoomActiveUser(io, roomName, newActiveUser)
   }
@@ -306,10 +319,9 @@ exports.onConnect = function (io, socket) {
 
   function newLinesAdded({ socket, data }) {
     const { userId, room: roomName } = parseData(data)
-    console.log('new lines being added')
+
     const [room] = rooms.findRoom(roomName)
     if (userId === room.activeUserId) {
-      console.log(userId, activeUserId)
       socket.to(roomName).emit('new_lines_added', JSON.stringify(data))
     } else {
       console.log('new lines added', userId, activeUserId)
@@ -346,7 +358,6 @@ exports.onConnect = function (io, socket) {
 
   function selectRole(users, role) {
     const usersWithOutRoles = users.filter((user) => user.role === null)
-    console.log(usersWithOutRoles)
     if (role !== DEFAULT) {
       const count = usersWithOutRoles.length - 1
       const index = Math.abs(Math.round(Math.random() * count))
@@ -372,12 +383,7 @@ exports.onConnect = function (io, socket) {
   function chooseUserToDraw(roomName, turn) {
     const [room] = rooms.findRoom(roomName)
     const players = room.users.filter((user) => user.role !== 'QUESTION_MASTER')
-    console.log({
-      room,
-      turn,
-      users: room.users,
-      players,
-    })
+
     const newActiveUser = room.users.find(
       (user) => user.userId === players[0].userId
     )
