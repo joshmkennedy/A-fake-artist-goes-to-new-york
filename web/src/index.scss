@@ -180,7 +180,9 @@ main{
 .side-by-side{
   display: flex;
   >div, svg{width:100%;}
-
+  &.align-end{
+    justify-content: flex-end;
+  }
 }
 .paper{
   max-width:600px;

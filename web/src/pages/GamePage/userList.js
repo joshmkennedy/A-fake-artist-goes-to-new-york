@@ -68,7 +68,7 @@ function UserList({ className, socket }) {
 }
 export default styled(UserList)`
   max-width: 200px;
-  margin: 0 auto;
+  margin: ${({ flatRight }) => (flatRight ? `0 0 0 auto` : `0 auto`)};
   border-radius: ${({ flatRight }) =>
     flatRight ? '10px 0px 0px 10px' : '10px'};
   li {
