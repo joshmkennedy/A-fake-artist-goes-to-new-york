@@ -13,7 +13,6 @@ function UserList({ className, socket }) {
   // const questionMaster = useGameStore((state) => state.questionMaster)
   if (allUsers.length <= 0) return null
   function startGame() {
-    console.log(socket)
     if (socket) {
       socket.emit(
         'start_game',

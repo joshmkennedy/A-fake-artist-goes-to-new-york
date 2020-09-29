@@ -12,7 +12,6 @@ function EnterRoomCard({ socket, className }) {
       state.userInformation.userName = value
     })
   }
-  console.log(roomId)
   function enterRoom(e) {
     e.preventDefault()
     socket.emit(

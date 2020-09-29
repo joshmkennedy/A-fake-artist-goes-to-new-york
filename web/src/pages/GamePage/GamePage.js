@@ -7,7 +7,7 @@ import { WEBSOCKET_URL } from 'src/config'
 
 import Lobby from './Lobby'
 import UserList from './UserList'
-import CategoryDropdown from './CategoryDropdown'
+import VotingForm from './VotingForm'
 import CategoryInfoCard from './CategoryInfoCard'
 import { useConnectSocket, useSetupGame, useGameStore } from './hooks'
 
@@ -38,7 +38,6 @@ const GamePage = ({ roomId }) => {
       })
 
       socket.on('new_users', (data) => {
-        console.log('new_users')
         const { userList } = JSON.parse(data)
         set((state) => {
           state.allUsers = [...userList]
@@ -78,13 +77,9 @@ const GamePage = ({ roomId }) => {
         })
       })
       socket.on('turn_ended', (data) => {
-        console.log(JSON.parse(data))
         console.log('Need to Write a function for turn_ended')
       })
-      socket.on('vote_on_faker', (data) => {
-        console.log(JSON.parse(data))
-        console.log('Need to Write a function for vote_on_faker')
-      })
+
       socket.on('expose_faker', (data) => {
         console.log(JSON.parse(data))
         console.log('Need to Write a function for expose_faker')
@@ -142,6 +137,8 @@ const GamePage = ({ roomId }) => {
             />
           </div>
         </GameBody>
+        {gameState === 'VOTING' && <VotingForm socket={socket} />}
+        {gameState === 'EXPOSE' && 'Expose the Faker'}
       </div>
     </MainLayout>
   )
@@ -193,7 +190,6 @@ const Paper = ({ socket, activeUser, userInformation, room }) => {
   useEffect(() => {
     if (!socket) return
     socket.on('new_lines_added', (data) => {
-      console.log('new lines ')
       const { lines } = JSON.parse(data)
       setLines(lines)
     })
@@ -227,7 +223,6 @@ const Paper = ({ socket, activeUser, userInformation, room }) => {
         onMouseMove={(e) => {
           if (!isDrawing) return
           e.persist()
-          console.log('drawing')
           setLines((prevState) => {
             const lastLine = prevState[prevState.length - 1]
             const finishedLines = prevState.filter(

@@ -9,7 +9,6 @@ function Lobby({ socket, className }) {
   const { isOwner, userId } = useGameStore((state) => state.userInformation)
   const roomId = useGameStore((state) => state.roomId)
 
-  console.log('from lobby', { isOwner, inRoom })
   return (
     <div className={className}>
       <div style={{ width: `100%` }}>

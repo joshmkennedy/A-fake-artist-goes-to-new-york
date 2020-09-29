@@ -17,6 +17,7 @@ const GENERATE_ROLES = 'GENERATE_ROLES'
 const PICKING_WORD = 'PICKING_WORD'
 const DRAWING_1 = 'DRAWING_1'
 const DRAWING_2 = 'DRAWING_2'
+const VOTING = 'VOTING'
 const EXPOSE = 'EXPOSE'
 
 exports.onConnect = function (io, socket) {
@@ -50,11 +51,15 @@ exports.onConnect = function (io, socket) {
         end_turn: endTurn,
       },
     },
-    EXPOSE: {
+    VOTING: {
       on: {
-        votes_submitted: exposeFaker,
+        vote_submitted: talleyVotes,
       },
       immediate: showVoteForm,
+    },
+    EXPOSE: {
+      on: {},
+      immediate: exposeFaker,
     },
   }
 
@@ -80,8 +85,8 @@ exports.onConnect = function (io, socket) {
   })
 
   //TODO
-  socket.on('votes_submitted', (data) => {
-    sendEvent('votes_submitted', { io, socket, data })
+  socket.on('vote_submitted', (data) => {
+    sendEvent('vote_submitted', { io, socket, data })
   })
 
   socket.on('disconnecting', () => {
@@ -266,15 +271,16 @@ exports.onConnect = function (io, socket) {
     if (everyoneHasGone) {
       const currentState = _room.state
       if (currentState === DRAWING_2) {
-        updateRoomState({ io, socket, state: EXPOSE, data })
+        updateRoomState({ io, socket, state: VOTING, data })
         return
       }
 
-      const firstUser = room.users[0].userId
-      room.setActiveUser(firstUser)
+      const firstUser =
+        room.users[0].role !== QUESTION_MASTER ? room.users[0] : room.users[1]
+      room.setActiveUser(firstUser.userId)
 
       updateRoomState({ io, socket, state: DRAWING_2, data })
-      notifyRoomActiveUser(io, roomName, room.users[0])
+      notifyRoomActiveUser(io, roomName, firstUser)
       console.log('back to start')
     } else {
       const activeUserIndex = room.users.findIndex(
@@ -295,18 +301,25 @@ exports.onConnect = function (io, socket) {
     const [room] = rooms.findRoom(roomName)
     //Notify all players (not question master) to vote who is the faker
 
-    const players = room.users.filter((user) => user.role !== 'QUESTION_MASTER')
-    io.to(room).emit(
+    const players = room.users
+      .filter((user) => user.role !== 'QUESTION_MASTER')
+      .map((player) => ({ userId: player.userId, userName: player.userName }))
+
+    io.to(roomName).emit(
       'vote_on_faker',
       JSON.stringify({
         players,
       })
     )
   }
+  function talleyVotes({ io, socket, data }) {
+    const { room, vote, userId } = parseData(data)
+    console.log(vote)
+  }
   //TODO:
   function exposeFaker({ io, socket, data }) {
-    const { room, usersVotes } = parseData(data)
-    console.log(room, usersVotes, io, socket)
+    const { room } = parseData(data)
+    console.log(room, io, socket)
     //talley up votes for each user
 
     //check if user with role faker had most

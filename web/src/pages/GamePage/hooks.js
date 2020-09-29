@@ -59,7 +59,6 @@ export const useGameStore = create((set) => ({
 export function useSetupGame(socket, room) {
   const { currentUser } = useAuth()
   const { isOwner } = useIsRoomOwner(room)
-  console.log({ isOwner }, 'from hooks.js')
   const set = useGameStore((state) => state.set)
   useEffect(() => {
     if (socket) {
