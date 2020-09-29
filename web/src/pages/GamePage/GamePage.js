@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react'
 import _ from 'lodash'
 import styled from 'styled-components'
+import { useConnectSocket, useSetupGame, useGameStore } from 'src/hooks'
+import { navigate, routes } from '@redwoodjs/router'
 
 import MainLayout from 'src/layouts/MainLayout/MainLayout'
 import { WEBSOCKET_URL } from 'src/config'
@@ -10,7 +12,6 @@ import UserList from './UserList'
 import VotingForm from './VotingForm'
 import CategoryInfoCard from './CategoryInfoCard'
 import Paper from './Paper'
-import { useConnectSocket, useSetupGame, useGameStore } from './hooks'
 
 const GamePage = ({ roomId }) => {
   const { socket } = useConnectSocket(WEBSOCKET_URL)
@@ -23,6 +24,7 @@ const GamePage = ({ roomId }) => {
 
   const activeUser = useGameStore((state) => state.activeUser)
   const gameState = useGameStore((state) => state.gameState)
+  const winners = useGameStore((state) => state.winners)
 
   useEffect(() => {
     if (socket) {
@@ -82,8 +84,12 @@ const GamePage = ({ roomId }) => {
       })
 
       socket.on('expose_faker', (data) => {
-        console.log(JSON.parse(data))
-        console.log('Need to Write a function for expose_faker')
+        const { winners, isFaker, faker } = JSON.parse(data)
+        set((state) => {
+          state.winners = winners
+          state.isFaker = isFaker
+          state.faker = faker
+        })
       })
     }
     function disconnect() {
@@ -114,7 +120,7 @@ const GamePage = ({ roomId }) => {
       </MainLayout>
     )
   }
-
+  if (gameState === 'EXPOSE' && winners) navigate(routes.expose({ roomId }))
   return (
     <MainLayout>
       <div>
@@ -139,7 +145,6 @@ const GamePage = ({ roomId }) => {
           </div>
         </GameBody>
         {gameState === 'VOTING' && <VotingForm socket={socket} />}
-        {gameState === 'EXPOSE' && 'Expose the Faker'}
       </div>
     </MainLayout>
   )

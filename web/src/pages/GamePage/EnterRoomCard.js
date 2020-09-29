@@ -1,6 +1,5 @@
 import styled from 'styled-components'
-
-import { useGameStore } from './hooks'
+import { useGameStore } from 'src/hooks'
 function EnterRoomCard({ socket, className }) {
   const { userName } = useGameStore((state) => state.userInformation)
   const roomId = useGameStore((state) => state.roomId)

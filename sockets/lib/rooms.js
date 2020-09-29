@@ -19,6 +19,8 @@ class Room {
     this.count = count
     this.state = state
     this.users = users
+    this.votes = {}
+    this.humanQM = true
   }
 
   addUser(userInformation, socket) {
@@ -37,6 +39,21 @@ class Room {
   setActiveUser(userId) {
     const user = this.users.find((user) => user.userId === userId)
     this.activeUserId = user.userId
+  }
+  updateVotes({ vote, userId }) {
+    if (!this.votes[vote]) {
+      this.votes[vote] = []
+    }
+    this.votes[vote].push(userId)
+  }
+  getVoteCount() {
+    return Object.keys(this.votes).reduce((count, key) => {
+      count += this.votes[key].length
+      return count
+    }, 0)
+  }
+  useRobotQM() {
+    this.humanQM = false
   }
 }
 

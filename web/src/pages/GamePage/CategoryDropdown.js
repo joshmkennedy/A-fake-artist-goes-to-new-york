@@ -1,6 +1,5 @@
 import { useState } from 'react'
-
-import { useGameStore } from './hooks'
+import { useGameStore } from 'src/hooks'
 
 export default function CategoryDropdown({ socket }) {
   const roomId = useGameStore((state) => state.roomId)

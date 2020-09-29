@@ -1,6 +1,6 @@
 import styled from 'styled-components'
+import { useGameStore } from 'src/hooks'
 
-import { useGameStore } from './hooks'
 import CategoryDropdown from './CategoryDropdown'
 
 function CategoryInfoCard({ className, socket }) {

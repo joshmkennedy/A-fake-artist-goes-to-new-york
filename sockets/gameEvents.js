@@ -312,22 +312,80 @@ exports.onConnect = function (io, socket) {
       })
     )
   }
+
   function talleyVotes({ io, socket, data }) {
-    const { room, vote, userId } = parseData(data)
-    console.log(vote)
+    const { room: roomName, vote, userId, userRole } = parseData(data)
+
+    //ignore QUESTION_MASTER votes
+    if (userRole === QUESTION_MASTER) return
+
+    const [room] = rooms.findRoom(roomName)
+
+    room.updateVotes({ vote, userId })
+
+    const playerCount = room.users.filter(
+      (user) => user.role !== 'QUESTION_MASTER'
+    ).length
+    console.log(room.getVoteCount(), playerCount)
+    if (room.getVoteCount() === playerCount) {
+      updateRoomState({ io, socket, state: EXPOSE, data })
+    }
   }
+
   //TODO:
-  function exposeFaker({ io, socket, data }) {
-    const { room } = parseData(data)
-    console.log(room, io, socket)
+  function exposeFaker({ io, data }) {
+    const { room: roomName } = parseData(data)
+
+    const [room] = rooms.findRoom(roomName)
+
     //talley up votes for each user
+    const tally = Object.keys(room.votes)
+      .reduce((talley, key) => {
+        talley.push({
+          userId: key,
+          user: room.users.find((user) => user.userId === key),
+          count: room.votes[key].length,
+        })
+        return talley
+      }, [])
+      .sort((a, b) => b.count - a.count) //orders greatest to least
+    const proposedFaker = tally[0].user
 
     //check if user with role faker had most
+    const isFaker = proposedFaker.role === FAKER
 
-    //if faker had most send faker lost and all votes for each user
+    const fakerUser = room.users.find((user) => user.role === FAKER)
+    const faker = { userId: fakerUser.userId, userName: fakerUser.userName }
 
-    //else send faker won and all votes for each user
+    const results = {
+      isFaker,
+      faker,
+      proposedFaker: {
+        userName: proposedFaker.userName,
+        userId: proposedFaker.userId,
+      },
+    }
 
+    if (!isFaker) {
+      const questionMasterUser = room.users.find(
+        (user) => user.role === QUESTION_MASTER
+      )
+      const questionMaster = {
+        userId: questionMasterUser.userId,
+        userName: questionMasterUser.userName,
+      }
+      results.winners = [faker, questionMaster]
+    } else {
+      const defaultUsers = room.users
+        .filter((user) => user.role === DEFAULT)
+        .map(({ userId, userName }) => ({
+          userId,
+          userName,
+        }))
+      results.winners = defaultUsers
+    }
+
+    io.to(roomName).emit('expose_faker', JSON.stringify(results))
     // ask to play again
   }
 

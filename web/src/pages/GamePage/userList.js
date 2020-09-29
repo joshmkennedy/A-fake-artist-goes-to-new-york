@@ -1,6 +1,5 @@
 import styled from 'styled-components'
-
-import { useGameStore } from './hooks'
+import { useGameStore } from 'src/hooks'
 function UserList({ className, socket }) {
   const allUsers = useGameStore((state) => state.allUsers)
   const activeUser = useGameStore((state) => state.activeUser)

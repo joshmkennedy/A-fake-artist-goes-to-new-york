@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { motion, AnimatePresence } from 'framer-motion'
-
-import { useGameStore } from './hooks'
+import { useGameStore } from 'src/hooks'
 function VotingForm({ socket, className }) {
   const [players, setPlayers] = useState([])
   const [voted, setVoted] = useState(false)

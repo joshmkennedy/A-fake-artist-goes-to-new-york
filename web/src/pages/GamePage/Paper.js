@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import _ from 'lodash'
-
-import { useGameStore } from './hooks'
+import { useGameStore } from 'src/hooks'
 
 export default function Paper({ socket, activeUser, userInformation, room }) {
   const [isDrawing, setIsDrawing] = useState(false)
