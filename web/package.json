@@ -13,15 +13,20 @@
     "@redwoodjs/router": "0.6.1-canary.29",
     "@redwoodjs/web": "0.6.1-canary.29",
     "dotenv": "^8.2.0",
+    "immer": "^7.0.9",
     "lodash": "^4.17.15",
     "lodash.debounce": "^4.0.8",
     "netlify-identity-widget": "^1.6.0",
+    "node-sass": "^4.14.1",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-netlify-identity": "^0.2.5",
     "react-netlify-identity-widget": "^0.2.7",
+    "sass": "^1.26.11",
+    "sass-loader": "^10.0.2",
     "socket.io-client": "^2.3.0",
-    "styled-components": "^5.1.0"
+    "styled-components": "^5.1.0",
+    "zustand": "^3.1.3"
   }
 }

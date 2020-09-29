@@ -1,4 +1,4 @@
 const Logo = () => {
-  return <p>{`Logo`}</p>
+  return `A Fake Artist Goes to New York`
 }
 export default Logo

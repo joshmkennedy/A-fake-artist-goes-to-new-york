@@ -154,7 +154,7 @@ exports.onConnect = function (io, socket) {
     })
     const state = _room ? _room.state : WAITING
     socket.emit(
-      'start',
+      'enter_lobby',
       JSON.stringify({
         newUser: { userId: newUser.userId, userName: newUser.userName },
         state,
@@ -223,7 +223,9 @@ exports.onConnect = function (io, socket) {
     )
     room.users.forEach((user) => {
       const message =
-        user.role === DEFAULT ? { pickedWord } : { pickedWord: 'unknown' }
+        user.role === DEFAULT || user.role === QUESTION_MASTER
+          ? { pickedWord }
+          : { pickedWord: 'X' }
       user.socket.emit('picked_word', JSON.stringify(message))
     })
     sendEvent('word_generated', { io, socket, data })
@@ -379,7 +381,7 @@ exports.onConnect = function (io, socket) {
     return questionMaster
   }
 
-  function chooseUserToDraw(roomName, turn) {
+  function chooseUserToDraw(roomName, _) {
     const [room] = rooms.findRoom(roomName)
     const players = room.users.filter((user) => user.role !== 'QUESTION_MASTER')
 

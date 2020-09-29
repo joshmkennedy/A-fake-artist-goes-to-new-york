@@ -1,4 +1,10 @@
 function Footer() {
-  return <p>© drawing</p>
+  return (
+    <footer>
+      <div>
+        <p>© drawing</p>
+      </div>
+    </footer>
+  )
 }
 export default Footer

@@ -1,5 +1,8 @@
 # Notes
 
+## RULES
+[rules](https://tesera.ru/images/items/744225/rule_fakeartist_e.pdf)
+
 ## Websocket Events
 ### Events Sever Responds to From Frontend
 - enter_room
@@ -30,11 +33,10 @@
 - exposeFaker function
 - make queries to my api from websockets: [graphql-request](https://www.npmjs.com/package/graphql-request)
 - Some sort of validation
-- Lots of other stuff
 - Some bug where sometimes selectRole errors out !!!!
 
 ##  Frontend TODOS:
-- Styling
 - break out into components
-- Add Zustand and Immer for state management
 - Lots of other stuff
+- implement voting
+- implement faker reveal start over

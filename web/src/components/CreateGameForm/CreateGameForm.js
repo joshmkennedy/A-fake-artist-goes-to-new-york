@@ -26,9 +26,11 @@ const CreateGameForm = () => {
       <button onClick={onClick}>creat{loading ? 'ing' : 'e'} game</button>
       {error && <pre>{JSON.stringify(error, null, 2)}</pre>}
       {data && (
-        <Link to={routes.paper({ roomId: data.createRoom.name })}>
-          {URL}/paper/{data.createRoom.name}
-        </Link>
+        <div>
+          <Link to={routes.paper({ roomId: data.createRoom.name })}>
+            {URL}/paper/{data.createRoom.name}
+          </Link>
+        </div>
       )}
     </>
   )

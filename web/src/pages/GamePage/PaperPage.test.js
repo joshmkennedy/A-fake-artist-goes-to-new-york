@@ -1,6 +1,6 @@
 import { render, cleanup } from '@testing-library/react'
 
-import PaperPage from './PaperPage'
+import GamePage from './GamePage'
 
 describe('PaperPage', () => {
   afterEach(() => {
@@ -8,7 +8,7 @@ describe('PaperPage', () => {
   })
   it('renders successfully', () => {
     expect(() => {
-      render(<PaperPage />)
+      render(<GamePage />)
     }).not.toThrow()
   })
 })
