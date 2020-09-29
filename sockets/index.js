@@ -17,10 +17,6 @@ const server = http.createServer(app)
 //app state
 const io = socketIo(server)
 
-function createRoom() {
-  return 'new-room'
-}
-
 io.on('connection', (socket) => {
   onConnect(io, socket)
 })
