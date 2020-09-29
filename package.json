@@ -21,6 +21,6 @@
   "scripts": {
     "dev": "yarn rw dev",
     "sockets": "yarn workspace sockets node .",
-    "heroku-postbuild": "node ./sockets/index.js"
+    "start": "yarn sockets"
   }
 }
