@@ -8,7 +8,9 @@ import MainLayout from 'src/layouts/MainLayout/MainLayout'
 import { WEBSOCKET_URL } from 'src/config'
 
 import Lobby from './Lobby'
-import UserList from './UserList'
+
+import UserList from '/src/pages/GamePage/UserList.js'
+
 import VotingForm from './VotingForm'
 import CategoryInfoCard from './CategoryInfoCard'
 import Paper from './Paper'
@@ -79,7 +81,7 @@ const GamePage = ({ roomId }) => {
           state.words.pickedWord = pickedWord
         })
       })
-      socket.on('turn_ended', (data) => {
+      socket.on('turn_ended', (_) => {
         console.log('Need to Write a function for turn_ended')
       })
 
