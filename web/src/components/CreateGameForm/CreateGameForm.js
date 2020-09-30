@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import styled from 'styled-components'
 import { useMutation } from '@redwoodjs/web'
 import { routes, Link } from '@redwoodjs/router'
 
@@ -11,7 +12,7 @@ export const CREATE_ROOM = gql`
     }
   }
 `
-const CreateGameForm = () => {
+const CreateGameForm = ({ className }) => {
   const [create, { data, loading, error }] = useMutation(CREATE_ROOM, {})
   const [notHumanQM, setNotHumanQM] = useState(false)
   const onSubmit = (e) => {
@@ -28,11 +29,14 @@ const CreateGameForm = () => {
   const [isShowOptions, setIsShowOptions] = useState(false)
 
   return (
-    <>
+    <div className={className}>
       <form onSubmit={onSubmit}>
-        <button>creat{loading ? 'ing' : 'e'} game</button>
+        <button className="create-btn">
+          creat{loading ? 'ing' : 'e'} game
+        </button>
         <span>
           <button
+            className="showOptions"
             type="button"
             onClick={() => setIsShowOptions((prev) => !prev)}
           >
@@ -62,8 +66,19 @@ const CreateGameForm = () => {
           </Link>
         </div>
       )}
-    </>
+    </div>
   )
 }
 
-export default CreateGameForm
+export default styled(CreateGameForm)`
+  form {
+    display: flex;
+  }
+  .create-btn {
+    border-radius: 4px 0px 0px 4px;
+  }
+  .showOptions {
+    border-radius: 0px 4px 4px 0px;
+    background: var(--dark-blue);
+  }
+`
