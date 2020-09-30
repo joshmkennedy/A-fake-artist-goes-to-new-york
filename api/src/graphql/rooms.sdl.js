@@ -5,6 +5,7 @@ export const schema = gql`
     ownerId: String
     active: Boolean
     userCount: Int
+    humanQM: Boolean
   }
   type Query {
     rooms: [Room]!
@@ -14,6 +15,7 @@ export const schema = gql`
 
   input CreateRoomInput {
     name: String
+    isHuman: Boolean
   }
   input UpdateRoomInput {
     name: String
@@ -28,5 +30,6 @@ export const schema = gql`
     addUserInRoom(id: Int!): Room!
     removeUserFromRoom(id: Int!): Room!
     clearAllRooms(secret: String!): String!
+    changeHumanQM(id: Int!, isHuman: Boolean!): Room!
   }
 `

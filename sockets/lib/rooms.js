@@ -14,13 +14,19 @@ class Rooms {
 }
 
 class Room {
-  constructor({ name, count = 0, state = 'WAITING', users = [] }) {
+  constructor({
+    name,
+    count = 0,
+    state = 'WAITING',
+    users = [],
+    humanQM = false,
+  }) {
     this.name = name
     this.count = count
     this.state = state
     this.users = users
     this.votes = {}
-    this.humanQM = true
+    this.humanQM = humanQM
   }
 
   addUser(userInformation, socket) {

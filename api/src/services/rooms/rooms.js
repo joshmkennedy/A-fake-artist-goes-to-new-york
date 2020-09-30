@@ -23,6 +23,7 @@ export const createRoom = async (_args, { context }) => {
     data: {
       name,
       ownerId: context?.currentUser?.email,
+      humanQM: _args.isHuman,
     },
   })
 }
@@ -97,4 +98,13 @@ export const clearAllRooms = ({ secret }) => {
   } else {
     return 'not allowed'
   }
+}
+
+export const changeHumanQM = async ({ id, isHuman }) => {
+  return db.room.update({
+    data: {
+      humanQM: isHuman,
+    },
+    where: { id },
+  })
 }

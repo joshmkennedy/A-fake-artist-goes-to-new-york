@@ -137,14 +137,14 @@ exports.onConnect = function (io, socket) {
 
   //STARTS User/ room functions
   function addNewUserToRoom({ io, socket, data }) {
-    const { room: roomName, userInformation } = parseData(data)
+    const { room: roomName, userInformation, humanQM } = parseData(data)
 
     let room
 
     const [_room] = rooms.findRoom(roomName)
     if (!_room) {
       console.log(`couldnt find ${roomName}`, rooms._rooms)
-      room = rooms.createRoom({ name: roomName, state: WAITING })
+      room = rooms.createRoom({ name: roomName, state: WAITING, humanQM })
     } else {
       room = _room
     }
@@ -187,7 +187,9 @@ exports.onConnect = function (io, socket) {
     const users = room.users
 
     // randomly pick user give QM Role
-    selectRole(users, QUESTION_MASTER)
+    if (room.humanQM) {
+      selectRole(users, QUESTION_MASTER)
+    }
     selectRole(users, FAKER)
     selectRole(users, DEFAULT)
 
@@ -200,23 +202,38 @@ exports.onConnect = function (io, socket) {
         })
       )
     })
-    const questionMaster = users.find((user) => user.role === 'QUESTION_MASTER')
-    //notify everyone of question master
-    io.to(roomName).emit(
-      'question_master_chosen',
-      JSON.stringify({
-        user: questionMaster.userId,
-      })
-    )
+
+    if (room.humanQM) {
+      const questionMaster = users.find(
+        (user) => user.role === 'QUESTION_MASTER'
+      )
+      //notify everyone of question master
+      io.to(roomName).emit(
+        'question_master_chosen',
+        JSON.stringify({
+          user: questionMaster.userId,
+        })
+      )
+    }
     updateRoomState({ io, socket, state: PICKING_WORD, data })
   }
 
   function generateWordFromCategory({ io, socket, data }) {
-    const { category, room: roomName } = data
-
-    const pickedWord =
-      words[category][Math.floor(Math.random() * words[category].length)]
+    const { room: roomName } = data
     const [room] = rooms.findRoom(roomName)
+    let pickedWord, category
+    if (room.humanQM) {
+      category = data.category
+    } else {
+      const catIndex = Math.floor(
+        Math.random() * (Object.keys(words).length - 1)
+      )
+      console.log(catIndex)
+      category = Object.keys(words)[catIndex]
+    }
+    console.log(category)
+    pickedWord =
+      words[category][Math.floor(Math.random() * words[category].length)]
 
     room.category = category
     room.pickedWord = pickedWord
@@ -243,16 +260,22 @@ exports.onConnect = function (io, socket) {
     notifyRoomActiveUser(io, roomName, newActiveUser)
   }
 
-  function askForCategory({ data }) {
-    const { room } = parseData(data)
-    const questionMaster = getQuestionMaster(room)
+  function askForCategory({ io, socket, data }) {
+    const { room: roomName } = parseData(data)
+    const [room] = rooms.findRoom(roomName)
+    if (!room.humanQM) {
+      sendEvent('category_word_picked', { io, socket, data })
+      return
+    } else {
+      const questionMaster = getQuestionMaster(roomName)
 
-    questionMaster.socket.emit(
-      'ask_for_category',
-      JSON.stringify({
-        categories: Object.keys(words),
-      })
-    )
+      questionMaster.socket.emit(
+        'ask_for_category',
+        JSON.stringify({
+          categories: Object.keys(words),
+        })
+      )
+    }
   }
 
   function endTurn({ io, socket, data, _room }) {
@@ -367,14 +390,18 @@ exports.onConnect = function (io, socket) {
     }
 
     if (!isFaker) {
-      const questionMasterUser = room.users.find(
-        (user) => user.role === QUESTION_MASTER
-      )
-      const questionMaster = {
-        userId: questionMasterUser.userId,
-        userName: questionMasterUser.userName,
+      if (room.humanQM) {
+        const questionMasterUser = room.users.find(
+          (user) => user.role === QUESTION_MASTER
+        )
+        const questionMaster = {
+          userId: questionMasterUser.userId,
+          userName: questionMasterUser.userName,
+        }
+        results.winners = [faker, questionMaster]
+      } else {
+        results.winners = [faker]
       }
-      results.winners = [faker, questionMaster]
     } else {
       const defaultUsers = room.users
         .filter((user) => user.role === DEFAULT)

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useMutation } from '@redwoodjs/web'
 import { routes, Link } from '@redwoodjs/router'
 
@@ -12,18 +13,47 @@ export const CREATE_ROOM = gql`
 `
 const CreateGameForm = () => {
   const [create, { data, loading, error }] = useMutation(CREATE_ROOM, {})
-
-  const onClick = () => {
+  const [notHumanQM, setNotHumanQM] = useState(false)
+  const onSubmit = (e) => {
+    e.preventDefault()
     create({
       variables: {
-        input: {},
+        input: {
+          isHuman: !notHumanQM,
+        },
       },
     })
   }
 
+  const [isShowOptions, setIsShowOptions] = useState(false)
+
   return (
     <>
-      <button onClick={onClick}>creat{loading ? 'ing' : 'e'} game</button>
+      <form onSubmit={onSubmit}>
+        <button>creat{loading ? 'ing' : 'e'} game</button>
+        <span>
+          <button
+            type="button"
+            onClick={() => setIsShowOptions((prev) => !prev)}
+          >
+            {' '}
+            {!isShowOptions ? <span>&darr;</span> : <span>&uarr;</span>}
+          </button>
+          {isShowOptions && (
+            <label>
+              use robot question master
+              <input
+                type="checkbox"
+                name="humanQM"
+                id="notHumanQM"
+                value={notHumanQM}
+                onChange={() => setNotHumanQM((prev) => !prev)}
+              />
+            </label>
+          )}
+        </span>
+      </form>
+
       {error && <pre>{JSON.stringify(error, null, 2)}</pre>}
       {data && (
         <div>

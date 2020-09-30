@@ -10,11 +10,12 @@ const ROOM = gql`
     roomByName(name: $name) {
       ownerId
       name
+      humanQM
     }
   }
 `
 
-export function useIsRoomOwner(room) {
+export function useGetRoomInfo(room) {
   const { data: roomData, loading } = useQuery(ROOM, {
     variables: { name: room },
   })
@@ -23,6 +24,8 @@ export function useIsRoomOwner(room) {
     !loading &&
     !authLoading &&
     currentUser?.email === roomData?.roomByName.ownerId
+  // const humanQM = !loading && roomData?.roomByName.humanQM
+  // console.log(humanQM, roomData?.roomByName.ownerId)
   return { isOwner }
 }
 
@@ -58,7 +61,7 @@ export const useGameStore = create((set) => ({
 
 export function useSetupGame(socket, room) {
   const { currentUser } = useAuth()
-  const { isOwner } = useIsRoomOwner(room)
+  const { isOwner } = useGetRoomInfo(room)
   const set = useGameStore((state) => state.set)
   useEffect(() => {
     if (socket) {
@@ -74,7 +77,11 @@ export function useSetupGame(socket, room) {
       })
     }
   }, [set, isOwner])
-
+  // useEffect(() => {
+  //   set((state) => {
+  //     state.humanQM = humanQM
+  //   })
+  // }, [humanQM, set])
   useEffect(() => {
     if (socket) {
       socket.on('room_state_update', (data) => {
