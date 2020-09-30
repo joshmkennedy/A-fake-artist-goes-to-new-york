@@ -1,6 +1,7 @@
 datasource DS {
   provider = "postgresql"
-  url = "***"
+  url      = "postgres://qiuxwoslgbicfm:0ac17a95ca49efa27a706be6de0b5d1724db0b49d40ed0245729cad0ba96750c@ec2-52-21-247-176.compute-1.amazonaws.com:5432/dfn16o5c1vism4"
+
 
 }
 
