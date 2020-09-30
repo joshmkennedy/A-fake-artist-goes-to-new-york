@@ -2,7 +2,7 @@ import styled from 'styled-components'
 import { useGameStore } from 'src/hooks'
 
 import EnterRoomCard from './EnterRoomCard'
-import UserList from './userList'
+import UserList from './UserList'
 function Lobby({ socket, className }) {
   const inRoom = useGameStore((state) => state.userInformation.inRoom)
   const gameState = useGameStore((state) => state.gameState)
