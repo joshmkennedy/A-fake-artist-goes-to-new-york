@@ -1,0 +1,23 @@
+datasource DS {
+  provider = "sqlite"
+  url = "***"
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = env("BINARY_TARGET")
+}
+
+// !NOT USING THIS ANYMORE
+model User {
+  id    Int     @default(autoincrement()) @id
+  email String  @unique
+  name  String?
+}
+
+model Room {
+  id      Int      @default(autoincrement()) @id
+  name    String   @unique
+  active  Boolean? @default(false)
+  ownerId String?
+}

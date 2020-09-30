@@ -1,0 +1,27 @@
+datasource DS {
+  provider = "sqlite"
+  url = "***"
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = env("BINARY_TARGET")
+}
+
+// Define your own datamodels here and run `yarn redwood db save` to create
+// migrations for them.
+model User {
+  id       Int     @default(autoincrement()) @id
+  email    String  @unique
+  name     String?
+  password String
+  Room     Room[]
+}
+
+model Room {
+  id      Int     @default(autoincrement()) @id
+  name    String  @unique
+  owner   User    @relation(fields: [ownerId], references: [id])
+  ownerId Int
+  active  Boolean
+}

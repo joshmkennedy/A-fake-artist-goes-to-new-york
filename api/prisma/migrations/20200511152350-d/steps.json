@@ -1,0 +1,17 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "UpdateField",
+      "model": "User",
+      "field": "inRoom",
+      "arity": "Optional"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "User",
+      "field": "inRoomId",
+      "arity": "Optional"
+    }
+  ]
+}
